@@ -1,340 +1,309 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Profile</title>
-    <style>
-        /* Reset and base */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body,
-        input,
-        button {
-            font-family: sans-serif;
-        }
-
-        body {
-            min-height: 100vh;
-            background: linear-gradient(to bottom, #f0f3ff, #ffffff 50%, #fef2f8);
-            padding: 40px 16px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .card {
-            width: 100%;
-            max-width: 720px;
-            background: #ffffff;
-            padding: 24px;
-            border-radius: 24px;
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #111827;
-            margin-bottom: 24px;
-            text-align: center;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Avatar Section */
-        .avatar-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-
-        .avatar-preview,
-        .avatar-placeholder {
-            width: 251px;
-            height: 251px;
-            border-radius: 50%;
-            object-fit: cover;
-            background: #f3f4f6;
-            margin-bottom: 16px;
-        }
-
-        .avatar-actions {
-            display: flex;
-            gap: 16px;
-        }
-
-        /* Buttons */
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 9999px;
-            cursor: pointer;
-            transition: opacity 0.2s ease;
-            font-size: 0.9rem;
-        }
-
-        .btn:hover {
-            opacity: 0.9;
-        }
-
-        .btn-gradient {
-            background: linear-gradient(to right, #8b5cf6, #ec4899);
-            color: #ffffff;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-gray {
-            background: #e5e7eb;
-            color: #374151;
-        }
-
-        /* Form fields */
-        .field-group {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .field-group label {
-            font-weight: 600;
-            color: #374151;
-        }
-
-        .field-group input[type="text"],
-        .field-group input[type="password"] {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            outline: none;
-        }
-
-        /* Skills Section */
-        .skills-section {
-            margin-bottom: 24px;
-        }
-
-        .skills-section label {
-            display: block;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 8px;
-        }
-
-        .tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-
-        .tag {
-            background: #fce7f3;
-            color: #be185d;
-            padding: 4px 12px;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            display: flex;
-            align-items: center;
-        }
-
-        .tag-want {
-            background: #ede9fe;
-            color: #6b21a8;
-        }
-
-        .tag button {
-            margin-left: 8px;
-            background: none;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .skills-input {
-            display: flex;
-            gap: 8px;
-        }
-
-        .skills-input input {
-            flex: 1;
-            padding: 8px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            outline: none;
-        }
-
-        .actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 16px;
-        }
-
-        /* Responsive */
-        @media (max-width: 600px) {
-            .avatar-actions {
-                flex-direction: column;
-            }
-
-            .skills-input {
-                flex-direction: column;
-            }
-
-            .skills-input button {
-                width: 100%;
-            }
-
-            .actions {
-                flex-direction: column;
-            }
-
-            .actions button {
-                width: 100%;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edit Profile</title>
+  <style>
+    /* Your preserved CSS here (same as your last message) */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, input, button { font-family: sans-serif; }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(to bottom, #f0f3ff, #ffffff 50%, #fef2f8);
+      padding: 40px 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .card {
+      width: 100%;
+      max-width: 720px;
+      background: #ffffff;
+      padding: 24px;
+      border-radius: 24px;
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    }
+    .title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #111827;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    form { display: flex; flex-direction: column; }
+    .avatar-section {
+      display: flex; flex-direction: column; align-items: center; margin-bottom: 24px;
+    }
+    .avatar-preview, .avatar-placeholder {
+      width: 251px; height: 251px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #f3f4f6;
+      margin-bottom: 16px;
+    }
+    .avatar-actions { display: flex; gap: 16px; }
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+      font-size: 0.9rem;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn-gradient {
+      background: linear-gradient(to right, #8b5cf6, #ec4899);
+      color: #ffffff;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .btn-gray { background: #e5e7eb; color: #374151; }
+    .field-group {
+      display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;
+    }
+    .field-group label { font-weight: 600; color: #374151; }
+    .field-group input[type="text"],
+    .field-group input[type="password"] {
+      width: 100%; padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px; outline: none;
+    }
+    .skills-section { margin-bottom: 24px; }
+    .skills-section label {
+      display: block; font-weight: 600;
+      color: #374151; margin-bottom: 8px;
+    }
+    .tags {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-bottom: 8px;
+    }
+    .tag {
+      background: #fce7f3; color: #be185d;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      display: flex; align-items: center;
+    }
+    .tag-want {
+      background: #ede9fe;
+      color: #6b21a8;
+    }
+    .tag button {
+      margin-left: 8px;
+      background: none;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .skills-input { display: flex; gap: 8px; }
+    .skills-input input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      outline: none;
+    }
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 16px;
+    }
+    @media (max-width: 600px) {
+      .avatar-actions { flex-direction: column; }
+      .skills-input { flex-direction: column; }
+      .skills-input button, .actions button {
+        width: 100%;
+      }
+      .actions { flex-direction: column; }
+    }
+  </style>
 </head>
 
 <body>
-    <div class="card">
-        <h1 class="title">Edit Profile</h1>
-        <form id="profileForm">
-            <div class="avatar-section">
-                <img src="" alt="" class="avatar-preview avatar-placeholder" id="avatarPreview">
-                <div class="avatar-actions">
-                    <button type="button" class="btn btn-gradient" id="photoButton">Add Photo</button>
-                    <button type="button" class="btn btn-gray" id="removeButton" style="display:none;">Remove</button>
-                    <input type="file" accept="image/*" id="avatarUpload" style="display:none;">
-                </div>
-            </div>
+  <div class="card">
+    <h1 class="title">Edit Profile</h1>
+    <form id="profileForm">
+      <div class="avatar-section">
+        <img src="" alt="avatar" class="avatar-preview avatar-placeholder" id="avatarPreview">
+        <div class="avatar-actions">
+          <button type="button" class="btn btn-gradient" id="photoButton">Add Photo</button>
+          <button type="button" class="btn btn-gray" id="removeButton" style="display:none;">Remove</button>
+          <input type="file" accept="image/*" id="avatarUpload" style="display:none;">
+        </div>
+      </div>
 
-            <div class="field-group">
-                <label for="name">Name</label>
-                <input type="text" id="name" placeholder="Name">
-                <label for="username">Username</label>
-                <input type="text" id="username" placeholder="Username">
-                <label for="location">Location</label>
-                <input type="text" id="location" placeholder="Location">
-            </div>
+      <div class="field-group">
+        <label for="name">Name</label>
+        <input type="text" id="name" placeholder="Name">
+        <label for="username">Username</label>
+        <input type="text" id="username" placeholder="Username">
+        <label for="location">Location</label>
+        <input type="text" id="location" placeholder="Location">
+      </div>
 
-            <div class="field-group">
-                <label>Change Password</label>
-                <input type="password" id="currentPassword" placeholder="Current Password">
-                <input type="password" id="newPassword" placeholder="New Password">
-                <input type="password" id="confirmPassword" placeholder="Confirm New Password">
-            </div>
+      <div class="skills-section">
+        <label>Offers</label>
+        <div class="tags" id="offersList"></div>
+        <div class="skills-input">
+          <input type="text" id="offerInput" placeholder="Add a skill...">
+          <button type="button" class="btn btn-gradient" id="addOfferBtn">Add</button>
+        </div>
+      </div>
 
-            <div class="skills-section">
-                <label>Offers</label>
-                <div class="tags" id="offersList"></div>
-                <div class="skills-input">
-                    <input type="text" id="offerInput" placeholder="Add a skill...">
-                    <button type="button" class="btn btn-gradient" id="addOfferBtn">Add</button>
-                </div>
-            </div>
+      <div class="skills-section">
+        <label>Wants</label>
+        <div class="tags" id="wantsList"></div>
+        <div class="skills-input">
+          <input type="text" id="wantInput" placeholder="Add a skill...">
+          <button type="button" class="btn btn-gradient" id="addWantBtn">Add</button>
+        </div>
+      </div>
 
-            <div class="skills-section">
-                <label>Wants</label>
-                <div class="tags" id="wantsList"></div>
-                <div class="skills-input">
-                    <input type="text" id="wantInput" placeholder="Add a skill...">
-                    <button type="button" class="btn btn-gradient" id="addWantBtn">Add</button>
-                </div>
-            </div>
+      <div class="actions">
+        <button type="button" class="btn btn-gray" id="discardBtn">Discard</button>
+        <button type="submit" class="btn btn-gradient">Save</button>
+      </div>
+    </form>
+  </div>
 
-            <div class="actions">
-                <button type="button" class="btn btn-gray" id="discardBtn">Discard</button>
-                <button type="submit" class="btn btn-gradient">Save</button>
-            </div>
-        </form>
-    </div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
 
-    <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-  import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyAWMZRlTTEJmMTkjBf4aVhlLeHLMTqUttU",
-    authDomain: "skillswap-9bfec.firebaseapp.com",
-    projectId: "skillswap-9bfec",
-    storageBucket: "skillswap-9bfec.appspot.com",
-    messagingSenderId: "320928436557",
-    appId: "1:320928436557:web:08c083525890a72e222704"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-  const storage = getStorage(app);
-
-  let currentUser = null;
-  let uploadedFile = null;
-
-  const avatarUpload = document.getElementById("avatarUpload");
-  avatarUpload.addEventListener("change", e => {
-    uploadedFile = e.target.files[0];
-  });
-
-  function getTags(containerId) {
-    const container = document.getElementById(containerId);
-    return Array.from(container.children).map(el => el.firstChild.textContent.trim());
-  }
-
-  onAuthStateChanged(auth, user => {
-    if (user) {
-      currentUser = user;
-    } else {
-      window.location.href = "login.html";
-    }
-  });
-
-  document.getElementById("profileForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    if (!currentUser) return;
-
-    const name = document.getElementById("name").value.trim();
-    const username = document.getElementById("username").value.trim();
-    const location = document.getElementById("location").value.trim();
-    const skills = getTags("offersList");
-    const goals = getTags("wantsList");
-
-    let avatarUrl = null;
-    if (uploadedFile) {
-      const storageRef = ref(storage, `avatars/${currentUser.uid}/${uploadedFile.name}`);
-      const snapshot = await uploadBytes(storageRef, uploadedFile);
-      avatarUrl = await getDownloadURL(snapshot.ref);
-    }
-
-    const data = {
-      name,
-      username,
-      location,
-      skills,
-      goals
+    const firebaseConfig = {
+      apiKey: "AIzaSyAWMZRlTTEJmMTkjBf4aVhlLeHLMTqUttU",
+      authDomain: "skillswap-9bfec.firebaseapp.com",
+      projectId: "skillswap-9bfec",
+      storageBucket: "skillswap-9bfec.appspot.com",
+      messagingSenderId: "320928436557",
+      appId: "1:320928436557:web:08c083525890a72e222704"
     };
-    if (avatarUrl) data.avatarUrl = avatarUrl;
 
-    await setDoc(doc(db, "users", currentUser.email), data, { merge: true });
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
 
-    alert("Profile updated!");
-    window.location.href = "user.html";
-  });
-</script>
+    const avatarPreview = document.getElementById("avatarPreview");
+    const avatarUpload = document.getElementById("avatarUpload");
+    const photoButton = document.getElementById("photoButton");
+    const removeButton = document.getElementById("removeButton");
 
+    let uploadedFile = null;
+    let currentUser = null;
+
+    function createTag(text, listEl) {
+      const span = document.createElement('span');
+      span.className = 'tag' + (listEl.id === 'wantsList' ? ' tag-want' : '');
+      span.textContent = text;
+      const btn = document.createElement('button');
+      btn.textContent = '×';
+      btn.addEventListener('click', () => listEl.removeChild(span));
+      span.appendChild(btn);
+      listEl.appendChild(span);
+    }
+
+    function getTags(containerId) {
+      const container = document.getElementById(containerId);
+      return Array.from(container.children).map(el => el.firstChild.textContent.trim());
+    }
+
+    function loadUserData(data) {
+      document.getElementById('name').value = data.name || "";
+      document.getElementById('username').value = data.username || "";
+      document.getElementById('location').value = data.location || "";
+      (data.skills || []).forEach(skill => createTag(skill, document.getElementById('offersList')));
+      (data.goals || []).forEach(goal => createTag(goal, document.getElementById('wantsList')));
+      if (data.avatarUrl) {
+        avatarPreview.src = data.avatarUrl;
+        avatarPreview.classList.remove('avatar-placeholder');
+        photoButton.textContent = "Edit Photo";
+        removeButton.style.display = "inline-block";
+      }
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        const docRef = doc(db, "users", user.email);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          loadUserData(docSnap.data());
+        }
+      } else {
+        window.location.href = "login.html";
+      }
+    });
+
+    avatarUpload.addEventListener('change', (e) => {
+      uploadedFile = e.target.files[0];
+      if (uploadedFile) {
+        avatarPreview.src = URL.createObjectURL(uploadedFile);
+        photoButton.textContent = 'Edit Photo';
+        removeButton.style.display = 'inline-block';
+        avatarPreview.classList.remove('avatar-placeholder');
+      }
+    });
+
+    photoButton.addEventListener('click', () => avatarUpload.click());
+    removeButton.addEventListener('click', () => {
+      avatarUpload.value = '';
+      uploadedFile = null;
+      avatarPreview.src = '';
+      photoButton.textContent = 'Add Photo';
+      removeButton.style.display = 'none';
+      avatarPreview.classList.add('avatar-placeholder');
+    });
+
+    document.getElementById('addOfferBtn').addEventListener('click', () => {
+      const val = document.getElementById('offerInput').value.trim();
+      if (val) {
+        createTag(val, document.getElementById('offersList'));
+        document.getElementById('offerInput').value = '';
+      }
+    });
+
+    document.getElementById('addWantBtn').addEventListener('click', () => {
+      const val = document.getElementById('wantInput').value.trim();
+      if (val) {
+        createTag(val, document.getElementById('wantsList'));
+        document.getElementById('wantInput').value = '';
+      }
+    });
+
+    document.getElementById('discardBtn').addEventListener('click', () => {
+      location.reload();
+    });
+
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) return;
+
+      const name = document.getElementById('name').value.trim();
+      const username = document.getElementById('username').value.trim();
+      const location = document.getElementById('location').value.trim();
+      const skills = getTags("offersList");
+      const goals = getTags("wantsList");
+
+      let avatarUrl = null;
+      if (uploadedFile) {
+        const storageRef = ref(storage, `avatars/${currentUser.uid}/${uploadedFile.name}`);
+        const snapshot = await uploadBytes(storageRef, uploadedFile);
+        avatarUrl = await getDownloadURL(snapshot.ref);
+      }
+
+      const data = {
+        name, username, location, skills, goals
+      };
+      if (avatarUrl) data.avatarUrl = avatarUrl;
+
+      await setDoc(doc(db, "users", currentUser.email), data, { merge: true });
+
+      alert("Profile saved!");
+      window.location.href = "user.html";
+    });
+  </script>
 </body>
-
 </html>
