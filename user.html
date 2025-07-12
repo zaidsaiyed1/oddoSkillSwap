@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile | SkillSwap</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Outfit', sans-serif; }
+  </style>
+</head>
+<body class="bg-gradient-to-b from-[#f0f3ff] via-white to-[#fef2f8] text-gray-800 min-h-screen flex flex-col">
+  <!-- Header -->
+  <header class="bg-white shadow-md px-8 py-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-pink-600">SkillSwap</h1>
+    <nav class="space-x-4 text-gray-700 font-medium">
+      <a href="index.html" class="hover:text-pink-500">Home</a>
+      <a href="dashboard.html" class="hover:text-pink-500">Dashboard</a>
+    </nav>
+  </header>
+
+  <!-- Profile Section -->
+  <main class="flex-grow px-6 py-10 max-w-4xl mx-auto">
+    <div class="bg-white rounded-2xl shadow-xl p-8">
+      <div class="flex items-center gap-6 mb-6">
+        <div class="w-24 h-24 rounded-full bg-purple-100 flex items-center justify-center text-3xl font-bold text-purple-600">PM</div>
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800">Priya Mehta</h2>
+          <p class="text-gray-500">📍 Mumbai, India</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="text-lg font-semibold mb-2 text-purple-600">Skills Offered</h3>
+          <div class="flex flex-wrap gap-2">
+            <span class="bg-yellow-100 px-3 py-1 rounded-full text-sm">🍳 Indian Cooking</span>
+            <span class="bg-green-100 px-3 py-1 rounded-full text-sm">🌱 Mindfulness</span>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold mb-2 text-purple-600">Wants to Learn</h3>
+          <div class="flex flex-wrap gap-2">
+            <span class="bg-orange-100 px-3 py-1 rounded-full text-sm">🗣 Spanish</span>
+            <span class="bg-purple-100 px-3 py-1 rounded-full text-sm">🎨 Painting</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <h3 class="text-lg font-semibold mb-2 text-purple-600">Availability</h3>
+        <select class="w-full md:w-1/2 border rounded-md px-4 py-2 shadow-sm">
+          <option>Weekdays</option>
+          <option>Weekends</option>
+          <option>Evenings</option>
+        </select>
+      </div>
+
+      <div class="mt-6">
+        <label class="inline-flex items-center">
+          <input type="checkbox" class="form-checkbox text-purple-500" checked>
+          <span class="ml-2 text-sm text-gray-600">Make my profile public</span>
+        </label>
+      </div>
+
+      <div class="mt-8 text-right">
+        <button class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-full font-semibold shadow-md hover:shadow-lg transition">Save Changes</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center text-sm text-gray-600 pt-10 pb-6 bg-gradient-to-t from-pink-50 to-white">
+    <p>© 2024 SkillSwap. All rights reserved.</p>
+  </footer>
+</body>
+</html>
