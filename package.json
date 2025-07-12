@@ -1,8 +1,0 @@
-{
-  "dependencies": {
-    "firebase": "^11.10.0",
-    "firebase-admin": "^13.4.0",
-    "react": "^19.1.0",
-    "reat": "^0.0.1-security"
-  }
-}

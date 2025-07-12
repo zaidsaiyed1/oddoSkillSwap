@@ -1,5 +1,5 @@
 const admin = require('firebase-admin');
-const serviceAccount = require('./skillswap-9bfec-firebase.json'); // Path to downloaded JSON
+const serviceAccount = require('../skillswap-9bfec-firebase.json'); // Path to downloaded JSON
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
