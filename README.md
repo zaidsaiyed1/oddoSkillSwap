@@ -1,22 +1,22 @@
 ## Problem Statement: Skill Swap Platform 
-Team Lead:
+*Team Lead:*
 
 Name: SAIYED MOHD ZAID
 Phone:+91 6352271595
 
-** Member 1:
+*Member 1:*
 
 Name: Samveg SHah
 
 Phone:+91 83204 42031
 
-** Memeber 2:
+*Memeber 2:*
 
 Nsme: Krish Sangani
 
 Phone:+91 87994 34837
 
-** Memeber 3:
+*Memeber 3:*
 
 Name: Jay jethwa
 
