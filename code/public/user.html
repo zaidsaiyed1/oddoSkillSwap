@@ -81,6 +81,7 @@
         emailEl.textContent = email;
         avatarEl.textContent = (user.displayName || defaultName).charAt(0).toUpperCase();
 
+      
         const docRef = doc(db, "users", email);
         
 

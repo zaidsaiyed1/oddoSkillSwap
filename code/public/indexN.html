@@ -11,114 +11,152 @@
   </style>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+  import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAWMZRlTTEJmMTkjBf4aVhlLeHLMTqUttU",
-      authDomain: "skillswap-9bfec.firebaseapp.com",
-      projectId: "skillswap-9bfec",
-      storageBucket: "skillswap-9bfec.appspot.com",
-      messagingSenderId: "320928436557",
-      appId: "1:320928436557:web:08c083525890a72e222704"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyAWMZRlTTEJmMTkjBf4aVhlLeHLMTqUttU",
+    authDomain: "skillswap-9bfec.firebaseapp.com",
+    projectId: "skillswap-9bfec",
+    storageBucket: "skillswap-9bfec.appspot.com",
+    messagingSenderId: "320928436557",
+    appId: "1:320928436557:web:08c083525890a72e222704"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+  const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-    onAuthStateChanged(auth, async (user) => {
-      const loginBtn = document.getElementById('login-btn');
-      const profileIcon = document.getElementById('profile-icon');
-      const profileInitial = document.getElementById('profile-initial');
-      const avatarImg = document.getElementById('profile-avatar-img');
+  const loginBtn = document.getElementById('login-btn');
+  const profileIcon = document.getElementById('profile-icon');
+  const profileInitial = document.getElementById('profile-initial');
+  const avatarImg = document.getElementById('profile-avatar-img');
+  const searchInput = document.querySelector('input[placeholder="Search skills..."]');
+  const carousel = document.getElementById("carousel");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
 
-      if (user) {
-        loginBtn?.classList.add('hidden');
-        profileIcon?.classList.remove('hidden');
+  let allUsers = [];
+  let filteredUsers = [];
+  let currentPage = 0;
+  const pageSize = 3;
 
-        const email = user.email;
-        const displayName = user.displayName || email.split("@")[0];
-        const initial = displayName.charAt(0).toUpperCase();
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      loginBtn?.classList.add('hidden');
+      profileIcon?.classList.remove('hidden');
 
-        const docRef = doc(db, "users", email);
-        const docSnap = await getDoc(docRef);
+      const email = user.email;
+      const displayName = user.displayName || email.split("@")[0];
+      const initial = displayName.charAt(0).toUpperCase();
 
-        if (docSnap.exists() && docSnap.data().avatarUrl) {
-          const avatarUrl = docSnap.data().avatarUrl;
-          avatarImg.src = avatarUrl;
-          avatarImg.classList.remove('hidden');
-          profileInitial.classList.add('hidden');
-        } else {
-          profileInitial.textContent = initial;
-          avatarImg.classList.add('hidden');
-          profileInitial.classList.remove('hidden');
-        }
+      const docRef = doc(db, "users", email);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists() && docSnap.data().avatarUrl) {
+        avatarImg.src = docSnap.data().avatarUrl;
+        avatarImg.classList.remove('hidden');
+        profileInitial.classList.add('hidden');
       } else {
-        window.location.href = "index.html";
+        profileInitial.textContent = initial;
+        avatarImg.classList.add('hidden');
+        profileInitial.classList.remove('hidden');
       }
-    });
+    } else {
+      window.location.href = "index.html";
+    }
+  });
 
-    // Load user cards from Firestore
-    document.addEventListener("DOMContentLoaded", async () => {
-      const carousel = document.getElementById("carousel");
-      carousel.innerHTML = "";
+  async function fetchUsers() {
+    const usersRef = collection(db, "users");
+    const querySnapshot = await getDocs(usersRef);
+    allUsers = querySnapshot.docs.map(doc => doc.data());
+    filteredUsers = [...allUsers];
+    currentPage = 0;
+    renderUsers();
+  }
 
-      const querySnapshot = await getDocs(collection(db, "users"));
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        const name = data.name || "Unnamed";
-        const email = doc.id;
-        const offers = data.skills || [];
-        const wants = data.wants || [];
-        const quote = data.quote || "Open to learning and helping others!";
-        const availability = data.availability || "weekdays";
-        const rating = data.rating || "5.0";
-        const avatar = data.avatarUrl || "";
-        const initials = name.slice(0, 2).toUpperCase();
+   function renderUsers() {
+  carousel.innerHTML = "";
+  const start = currentPage * pageSize;
+  const pageItems = filteredUsers.slice(start, start + pageSize);
 
-        const offersHTML = offers.map(skill => `<span class="bg-pink-100 px-3 py-1 rounded-full text-sm">${skill}</span>`).join('');
-        const wantsHTML = wants.map(skill => `<span class="bg-purple-100 px-3 py-1 rounded-full text-sm">${skill}</span>`).join('');
-
-        const card = document.createElement("div");
-        card.className = "bg-white p-6 rounded-2xl shadow-xl w-96 shrink-0";
-        card.setAttribute("data-availability", availability);
-
-        card.innerHTML = `
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center space-x-3">
-              ${
-                avatar
-                  ? `<img src="${avatar}" class="w-10 h-10 rounded-full object-cover">`
-                  : `<div class="w-10 h-10 bg-pink-100 text-pink-600 font-bold rounded-full flex items-center justify-center">${initials}</div>`
-              }
-              <div>
-                <p class="font-semibold text-lg">${name}</p>
-                <div class="text-yellow-400 text-sm">⭐ ⭐ ⭐ ⭐ ⭐</div>
-              </div>
-            </div>
-            <span class="text-sm font-semibold text-gray-500">${rating}</span>
+  pageItems.forEach(user => {
+    const userEmail = user.email || "";
+    const card = document.createElement("div");
+    card.className = "bg-white p-6 rounded-2xl shadow-xl w-96 shrink-0";
+    card.innerHTML = `
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-purple-100 text-purple-600 font-bold rounded-full flex items-center justify-center">
+            ${(user.name || "U")[0].toUpperCase()}
           </div>
-          <p class="text-sm font-medium text-gray-600">OFFERS</p>
-          <div class="flex flex-wrap gap-2 my-1">${offersHTML}</div>
-          <p class="text-sm font-medium text-gray-600 mt-2">WANTS TO LEARN</p>
-          <div class="flex flex-wrap gap-2 my-1">${wantsHTML}</div>
-          <p class="text-sm italic text-gray-600 mt-2">"${quote}"</p>
-          <button class="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 rounded-full font-semibold shadow-md hover:shadow-lg transition" onclick="location.href='request.html?to=${email}'">Send Request</button>
-        `;
-        carousel.appendChild(card);
-      });
+          <div>
+            <p class="font-semibold text-lg">${user.name || "Unknown"}</p>
+            <div class="text-yellow-400 text-sm">⭐ ⭐ ⭐ ⭐ ⭐</div>
+          </div>
+        </div>
+        <span class="text-sm font-semibold text-gray-500">4.9</span>
+      </div>
+      <p class="text-sm font-medium text-gray-600">OFFERS</p>
+      <div class="flex flex-wrap gap-2 my-1">
+        ${(user.skills || []).map(skill => `<span class="bg-pink-100 px-3 py-1 rounded-full text-sm">${skill}</span>`).join("") || "<span class='text-gray-400'>No skills listed</span>"}
+      </div>
+      <p class="text-sm font-medium text-gray-600 mt-2">WANTS TO LEARN</p>
+      <div class="flex flex-wrap gap-2 my-1">
+        ${(user.goals || []).map(goal => `<span class="bg-purple-100 px-3 py-1 rounded-full text-sm">${goal}</span>`).join("") || "<span class='text-gray-400'>No goals listed</span>"}
+      </div>
+      <p class="text-sm italic text-gray-600 mt-2">"Excited to swap skills!"</p>
+      <button onclick="window.location.href='chat.html?user=${encodeURIComponent(userEmail)}'" class="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 rounded-full font-semibold shadow-md hover:shadow-lg transition">
+        Send Request
+      </button>`;
+    carousel.appendChild(card);
+  });
+
+  prevBtn.disabled = currentPage === 0;
+  nextBtn.disabled = (currentPage + 1) * pageSize >= filteredUsers.length;
+}
+
+
+  document.getElementById("prevBtn").addEventListener("click", () => {
+    if (currentPage > 0) {
+      currentPage--;
+      renderUsers();
+    }
+  });
+
+  document.getElementById("nextBtn").addEventListener("click", () => {
+    if ((currentPage + 1) * pageSize < filteredUsers.length) {
+      currentPage++;
+      renderUsers();
+    }
+  });
+
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      const search = searchInput.value.trim().toLowerCase();
+      filteredUsers = allUsers.filter(user =>
+        (user.skills || []).some(skill => skill.toLowerCase().includes(search))
+      );
+      currentPage = 0;
+      renderUsers();
     });
-  </script>
+  }
+
+  document.addEventListener("DOMContentLoaded", fetchUsers);
+</script>
+
+
+  
 </head>
 
 <body class="bg-gradient-to-b from-[#f0f3ff] via-white to-[#fef2f8] text-gray-800 min-h-screen">
   <header class="bg-white shadow-md px-8 py-4 flex justify-between items-center sticky top-0 z-50">
     <h1 class="text-2xl font-bold text-pink-600">SkillSwap</h1>
     <nav class="hidden md:flex space-x-6 text-gray-700 font-medium">
-      <a href="#" class="hover:text-pink-500">Home</a>
       <a href="dashboard.html" class="hover:text-pink-500">Dashboard</a>
+      <a href="aboutus.html" class="hover:text-pink-500">About Us</a>
       <a href="user.html" class="hover:text-pink-500">Profile</a>
     </nav>
     <div class="flex items-center space-x-2">
@@ -133,49 +171,76 @@
 
   <main class="flex flex-col md:flex-row gap-6 px-6 md:px-20 py-10">
     <!-- Filters -->
-    <aside class="bg-white p-6 rounded-2xl shadow-xl w-full md:w-1/4">
-      <h2 class="text-lg font-semibold mb-4">Filters</h2>
-      <div class="mb-6">
-        <p class="font-medium mb-2">Skills</p>
-        <label class="block mb-1"><input type="checkbox" class="mr-2"> 🎨 Design</label>
-        <label class="block mb-1"><input type="checkbox" class="mr-2"> 💻 Programming</label>
-        <label class="block mb-1"><input type="checkbox" class="mr-2"> 📸 Photography</label>
-        <label class="block mb-1"><input type="checkbox" class="mr-2"> 🎵 Music</label>
-        <label class="block mb-1"><input type="checkbox" class="mr-2"> 🔍 Cooking</label>
-      </div>
-      <div class="mb-6">
-        <p class="font-medium mb-2">Availability</p>
-        <label class="block mb-1"><input type="checkbox" class="mr-2"> Weekdays</label>
-        <label class="block mb-1"><input type="checkbox" class="mr-2"> Weekends</label>
-      </div>
+    <aside class="bg-white p-6 rounded-2xl shadow-xl w-full md:w-[27%]">
+
+  <h2 class="text-lg font-semibold mb-4">Filters</h2>
+
+  <!-- Skills Filter -->
+  <div class="mb-6">
+    <p class="font-medium mb-2">Skills</p>
+    <label class="block mb-1"><input type="checkbox" class="mr-2"> 🎨 Design</label>
+    <label class="block mb-1"><input type="checkbox" class="mr-2"> 💻 Programming</label>
+    <label class="block mb-1"><input type="checkbox" class="mr-2"> 📸 Photography</label>
+    <label class="block mb-1"><input type="checkbox" class="mr-2"> 🎵 Music</label>
+    <label class="block mb-1"><input type="checkbox" class="mr-2"> 🔍 Cooking</label>
+  </div>
+
+  <!-- Availability Filter -->
+  <div class="mb-6">
+    <p class="font-medium mb-2">Availability</p>
+    <label class="block mb-1"><input type="checkbox" class="mr-2" data-filter="availability" value="Weekdays"> Weekdays</label>
+    <label class="block mb-1"><input type="checkbox" class="mr-2" data-filter="availability" value="Weekends"> Weekends</label>
+  </div>
+
+  <!-- Rating (static visuals for now) -->
+  <div>
+    <p class="font-medium mb-2">Minimum Rating</p>
+    <div class="text-yellow-400 text-xl space-x-1">
+      <span>⭐ ⭐ ⭐ ⭐ ⭐</span>
+    </div>
+  </div>
+</aside>
+
+
+    <!-- Skills and Members -->
+    <section class="flex-1 space-y-10">
       <div>
-        <p class="font-medium mb-2">Minimum Rating</p>
-        <div class="text-yellow-400 text-xl space-x-1">
-          <span>⭐ ⭐ ⭐ ⭐ ⭐</span>
+        <h3 class="text-2xl font-semibold mb-4">Popular Skills</h3>
+        <div class="flex flex-wrap gap-4">
+          <span class="px-4 py-2 bg-white rounded-full shadow-md text-base">🎨 Graphic Design</span>
+          <span class="px-4 py-2 bg-white rounded-full shadow-md text-base">💻 Web Development</span>
+          <span class="px-4 py-2 bg-white rounded-full shadow-md text-base">📸 Photography</span>
+          <span class="px-4 py-2 bg-white rounded-full shadow-md text-base">🎸 Guitar</span>
+          <span class="px-4 py-2 bg-white rounded-full shadow-md text-base">🔍 Cooking</span>
+          <span class="px-4 py-2 bg-white rounded-full shadow-md text-base">🗣 Languages</span>
         </div>
       </div>
-    </aside>
 
-    <!-- Member Cards -->
-    <section class="flex-1 space-y-10">
-      <h3 class="text-2xl font-semibold mb-6">Featured Members</h3>
-      <div id="carousel" class="flex overflow-x-auto gap-6 scroll-smooth snap-x snap-mandatory pb-4">
-        <!-- Cards will be injected here from Firestore -->
-      </div>
-      <div class="mt-4 flex justify-center gap-4">
-        <button onclick="document.getElementById('carousel').scrollBy({ left: -900, behavior: 'smooth' })" class="bg-purple-500 text-white px-4 py-2 rounded-full">← Prev</button>
-        <button onclick="document.getElementById('carousel').scrollBy({ left: 900, behavior: 'smooth' })" class="bg-purple-500 text-white px-4 py-2 rounded-full">Next →</button>
+      <!-- Featured Members Section -->
+      <div>
+        <h3 class="text-2xl font-semibold mb-6">Featured Members</h3>
+        <div id="carousel" class="flex overflow-x-auto gap-6 scroll-smooth snap-x snap-mandatory pb-4">
+          
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-4 flex justify-center gap-4">
+  <button id="prevBtn" class="bg-purple-500 text-white px-4 py-2 rounded-full disabled:opacity-50">← Prev</button>
+  <button id="nextBtn" class="bg-purple-500 text-white px-4 py-2 rounded-full disabled:opacity-50">Next →</button>
+</div>
+
       </div>
     </section>
   </main>
 
   <footer class="text-center text-sm text-gray-600 pt-10 pb-6 mt-10 bg-gradient-to-t from-pink-50 to-white">
     <div class="space-x-6 mb-2">
-      <a href="#" class="hover:underline">About</a>
+      <a href="aboutus.html" class="hover:underline">About</a>
       <a href="#" class="hover:underline">Contact</a>
       <a href="#" class="hover:underline">Terms</a>
     </div>
     <p>© 2024 SkillSwap. All rights reserved.</p>
   </footer>
+  
 </body>
 </html>

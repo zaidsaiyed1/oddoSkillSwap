@@ -7,24 +7,28 @@
 </head>
 <body class="bg-gradient-to-b from-purple-50 to-pink-50 min-h-screen flex items-center justify-center px-4">
   <div class="bg-white p-8 rounded-xl shadow-lg text-center max-w-sm w-full">
-    <h1 class="text-2xl font-bold mb-4 text-gray-800">Choose Meeting Method</h1>
-    <p class="mb-6 text-gray-600">How would you like to connect?</p>
+    <h1 class="text-2xl font-bold mb-4 text-gray-800">Offer a Skill</h1>
+    <p class="mb-2 text-gray-600">Select a skill you can teach this user:</p>
     
+    <!-- Dropdown for receiver's desired skills -->
+    <select id="skillDropdown" class="w-full mb-4 px-4 py-2 rounded-md border border-gray-300 focus:outline-none">
+      <option disabled selected>Loading skills...</option>
+    </select>
+
     <div class="space-y-4 mb-6">
       <button id="meetBtn" class="w-full bg-purple-600 text-white py-2 rounded-full font-semibold hover:bg-purple-700 transition">Google Meet</button>
       <button id="inPersonBtn" class="w-full bg-pink-500 text-white py-2 rounded-full font-semibold hover:bg-pink-600 transition">In-Person</button>
     </div>
 
-    <p id="statusMsg" class="text-sm text-green-600 font-medium hidden mb-4">Request Sent!</p>
+    <p id="statusMsg" class="text-sm text-green-600 font-medium hidden mb-4">✅ Request Sent!</p>
 
-    <!-- 🔙 Back Button -->
     <button onclick="location.href='index.html'" class="mt-4 w-full bg-gray-200 text-gray-800 py-2 rounded-full font-semibold hover:bg-gray-300 transition">← Back to Home</button>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAWMZRlTTEJmMTkjBf4aVhlLeHLMTqUttU",
@@ -39,36 +43,74 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    const skillDropdown = document.getElementById("skillDropdown");
+    const statusMsg = document.getElementById("statusMsg");
     let currentUser = null;
+    let selectedSkill = null;
 
-    onAuthStateChanged(auth, (user) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const receiverEmail = urlParams.get('to') || "sarah@email.com";
+
+    onAuthStateChanged(auth, async (user) => {
       if (!user) {
         alert("Please login first.");
         window.location.href = "login.html";
-      } else {
-        currentUser = user;
+        return;
+      }
+
+      currentUser = user;
+
+      try {
+        const receiverDoc = await getDoc(doc(db, "users", receiverEmail));
+
+        if (receiverDoc.exists()) {
+          const receiverData = receiverDoc.data();
+          const wantedSkills = receiverData.skillsWanted || [];
+
+          if (wantedSkills.length > 0) {
+            skillDropdown.innerHTML = wantedSkills.map(skill =>
+              `<option value="${skill}">${skill}</option>`
+            ).join('');
+            selectedSkill = wantedSkills[0];
+          } else {
+            skillDropdown.innerHTML = `<option disabled>No skills requested</option>`;
+          }
+        } else {
+          skillDropdown.innerHTML = `<option disabled>User not found</option>`;
+        }
+
+      } catch (err) {
+        console.error("Error fetching receiver data:", err);
+        skillDropdown.innerHTML = `<option disabled>Error loading skills</option>`;
       }
     });
 
-    // Optionally read ?to=email@example.com from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const receiverEmail = urlParams.get('to') || "sarah@email.com"; // fallback if not passed
+    skillDropdown.addEventListener("change", (e) => {
+      selectedSkill = e.target.value;
+    });
 
     async function sendRequest(method) {
-      if (!currentUser) return;
+      if (!currentUser || !selectedSkill) {
+        alert("Please select a skill.");
+        return;
+      }
 
       await addDoc(collection(db, "requests"), {
         sender: currentUser.email,
         receiver: receiverEmail,
         method: method,
+        skillOffered: selectedSkill,
         status: "pending",
         timestamp: new Date()
       });
 
-      document.getElementById("statusMsg").classList.remove("hidden");
+      statusMsg.classList.remove("hidden");
     }
+document.getElementById("meetBtn").addEventListener("click", async () => {
+  await sendRequest("Google Meet");
+  window.location.href = `google_meet.html?to=${encodeURIComponent(receiverEmail)}`;
+});
 
-    document.getElementById("meetBtn").addEventListener("click", () => sendRequest("Google Meet"));
     document.getElementById("inPersonBtn").addEventListener("click", () => sendRequest("In-Person"));
   </script>
 </body>

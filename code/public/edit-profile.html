@@ -124,13 +124,17 @@
     <h1 class="title">Edit Profile</h1>
     <form id="profileForm">
       <div class="avatar-section">
-        <img src="" alt="avatar" class="avatar-preview avatar-placeholder" id="avatarPreview">
-        <div class="avatar-actions">
-          <button type="button" class="btn btn-gradient" id="photoButton">Add Photo</button>
-          <button type="button" class="btn btn-gray" id="removeButton" style="display:none;">Remove</button>
-          <input type="file" accept="image/*" id="avatarUpload" style="display:none;">
-        </div>
-      </div>
+  <p class="avatar-note" style="font-size: 0.75rem; color: #dc2626; margin-bottom: 0.5rem;">
+    ⚠️ Image upload is currently unavailable due to Firebase limits
+  </p>
+  <img src="" alt="avatar" class="avatar-preview avatar-placeholder" id="avatarPreview">
+  <div class="avatar-actions">
+    <button type="button" class="btn btn-gradient" id="photoButton">Add Photo</button>
+    <button type="button" class="btn btn-gray" id="removeButton" style="display:none;">Remove</button>
+    <input type="file" accept="image/*" id="avatarUpload" style="display:none;">
+  </div>
+</div>
+
 
       <div class="field-group">
         <label for="name">Name</label>
@@ -145,18 +149,36 @@
         <label>Offers</label>
         <div class="tags" id="offersList"></div>
         <div class="skills-input">
-          <input type="text" id="offerInput" placeholder="Add a skill...">
-          <button type="button" class="btn btn-gradient" id="addOfferBtn">Add</button>
-        </div>
+  <select id="offerSelect">
+    <option value="">Choose a skill</option>
+    <option value="Python">Python</option>
+    <option value="Java">Java</option>
+    <option value="JavaScript">JavaScript</option>
+    <option value="Video Editing">Video Editing</option>
+    <option value="Content Creation">Content Creation</option>
+  </select>
+  <input type="text" id="offerInput" placeholder="Or type a custom skill..." />
+  <button type="button" class="btn btn-gradient" id="addOfferBtn">Add</button>
+</div>
+
       </div>
 
       <div class="skills-section">
         <label>Wants</label>
         <div class="tags" id="wantsList"></div>
         <div class="skills-input">
-          <input type="text" id="wantInput" placeholder="Add a skill...">
-          <button type="button" class="btn btn-gradient" id="addWantBtn">Add</button>
-        </div>
+  <select id="wantSelect">
+    <option value="">Choose a skill</option>
+    <option value="Python">Python</option>
+    <option value="Java">Java</option>
+    <option value="JavaScript">JavaScript</option>
+    <option value="Video Editing">Video Editing</option>
+    <option value="Content Creation">Content Creation</option>
+  </select>
+  <input type="text" id="wantInput" placeholder="Or type a custom skill..." />
+  <button type="button" class="btn btn-gradient" id="addWantBtn">Add</button>
+</div>
+
       </div>
 
       <div class="actions">
@@ -258,20 +280,29 @@
     });
 
     document.getElementById('addOfferBtn').addEventListener('click', () => {
-      const val = document.getElementById('offerInput').value.trim();
-      if (val) {
-        createTag(val, document.getElementById('offersList'));
-        document.getElementById('offerInput').value = '';
-      }
-    });
+  const selectEl = document.getElementById('offerSelect');
+  const selectVal = selectEl ? selectEl.value.trim() : "";
+  const inputVal = document.getElementById('offerInput').value.trim();
+  const val = inputVal || selectVal;
+  if (val) {
+    createTag(val, document.getElementById('offersList'));
+    document.getElementById('offerInput').value = '';
+    if (selectEl) selectEl.selectedIndex = 0;
+  }
+});
 
-    document.getElementById('addWantBtn').addEventListener('click', () => {
-      const val = document.getElementById('wantInput').value.trim();
-      if (val) {
-        createTag(val, document.getElementById('wantsList'));
-        document.getElementById('wantInput').value = '';
-      }
-    });
+document.getElementById('addWantBtn').addEventListener('click', () => {
+  const selectEl = document.getElementById('wantSelect');
+  const selectVal = selectEl ? selectEl.value.trim() : "";
+  const inputVal = document.getElementById('wantInput').value.trim();
+  const val = inputVal || selectVal;
+  if (val) {
+    createTag(val, document.getElementById('wantsList'));
+    document.getElementById('wantInput').value = '';
+    if (selectEl) selectEl.selectedIndex = 0;
+  }
+});
+
 
     document.getElementById('discardBtn').addEventListener('click', () => {
       location.reload();

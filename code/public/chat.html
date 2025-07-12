@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chat - SkillSwap</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Outfit', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+  <header class="bg-white shadow px-6 py-4 flex justify-between items-center">
+    <h1 class="text-xl font-bold text-pink-600">SkillSwap Chat</h1>
+    <a href="indexN.html" class="bg-purple-500 text-white px-4 py-2 rounded-full hover:bg-purple-600">← Back to Dashboard</a>
+  </header>
+
+  <main class="flex-1 p-6 flex flex-col overflow-hidden">
+    <div id="chat-box" class="flex-1 overflow-y-auto mb-4 space-y-2"></div>
+    <div class="flex gap-2">
+      <input id="msg-input" type="text" placeholder="Type your message..." class="flex-1 px-4 py-2 rounded-full border border-gray-300 shadow-inner focus:outline-none" />
+      <button id="send-btn" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-full">Send</button>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAWMZRlTTEJmMTkjBf4aVhlLeHLMTqUttU",
+      authDomain: "skillswap-9bfec.firebaseapp.com",
+      projectId: "skillswap-9bfec",
+      storageBucket: "skillswap-9bfec.appspot.com",
+      messagingSenderId: "320928436557",
+      appId: "1:320928436557:web:08c083525890a72e222704"
+    };
+
+    const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const chatBox = document.getElementById("chat-box");
+    const msgInput = document.getElementById("msg-input");
+    const sendBtn = document.getElementById("send-btn");
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const otherUser = urlParams.get("user");
+
+    let currentUserEmail = "";
+    let chatId = "";
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return (window.location.href = "login.html");
+
+      currentUserEmail = user.email;
+      chatId = [currentUserEmail, otherUser].sort().join("_");
+
+      const messagesRef = collection(db, "messages", chatId, "messages");
+      const q = query(messagesRef, orderBy("timestamp", "asc"));
+
+      onSnapshot(q, (snapshot) => {
+        chatBox.innerHTML = "";
+        snapshot.forEach(doc => {
+          const msg = doc.data();
+          const isOwn = msg.sender === currentUserEmail;
+          const msgEl = document.createElement("div");
+          msgEl.className = `px-4 py-2 rounded-lg w-fit max-w-[70%] ${isOwn ? "bg-purple-500 text-white self-end ml-auto" : "bg-gray-200 text-gray-800 self-start"}`;
+          msgEl.textContent = msg.text;
+          chatBox.appendChild(msgEl);
+          chatBox.scrollTop = chatBox.scrollHeight;
+        });
+      });
+    });
+
+    sendBtn.addEventListener("click", async () => {
+      const text = msgInput.value.trim();
+      if (!text || !currentUserEmail || !chatId) return;
+
+      const messagesRef = collection(db, "messages", chatId, "messages");
+      await addDoc(messagesRef, {
+        sender: currentUserEmail,
+        text,
+        timestamp: serverTimestamp()
+      });
+
+      msgInput.value = "";
+    });
+  </script>
+</body>
+</html>
