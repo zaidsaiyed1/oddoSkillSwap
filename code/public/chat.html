@@ -2,30 +2,50 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Chat - SkillSwap</title>
+  <title>SkillSwap Chat</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { font-family: 'Outfit', sans-serif; }
   </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col">
-  <header class="bg-white shadow px-6 py-4 flex justify-between items-center">
-    <h1 class="text-xl font-bold text-pink-600">SkillSwap Chat</h1>
-    <a href="indexN.html" class="bg-purple-500 text-white px-4 py-2 rounded-full hover:bg-purple-600">← Back to Dashboard</a>
-  </header>
+<body class="flex h-screen bg-gray-100">
+  <!-- Sidebar for chat list -->
+  <aside class="w-64 bg-white border-r shadow-lg p-4 overflow-y-auto">
+    <h2 class="text-lg font-bold mb-4 text-pink-600">Chats</h2>
+    <ul id="chat-list" class="space-y-2"></ul>
+    <a href="indexN.html" class="block mt-6 text-center bg-purple-500 text-white px-4 py-2 rounded-full hover:bg-purple-600">← Dashboard</a>
+  </aside>
 
-  <main class="flex-1 p-6 flex flex-col overflow-hidden">
-    <div id="chat-box" class="flex-1 overflow-y-auto mb-4 space-y-2"></div>
-    <div class="flex gap-2">
-      <input id="msg-input" type="text" placeholder="Type your message..." class="flex-1 px-4 py-2 rounded-full border border-gray-300 shadow-inner focus:outline-none" />
-      <button id="send-btn" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-full">Send</button>
-    </div>
+  <!-- Chat area -->
+  <main class="flex-1 flex flex-col">
+    <header class="bg-white shadow px-6 py-4 flex justify-between items-center">
+      <h1 class="text-xl font-bold text-gray-700" id="chat-header">Select a chat</h1>
+    </header>
+
+    <section class="flex-1 flex flex-col p-6">
+      <div id="chat-box" class="flex-1 overflow-y-auto mb-4 space-y-2"></div>
+      <div class="flex gap-2">
+        <input id="msg-input" type="text" placeholder="Type your message..." class="flex-1 px-4 py-2 rounded-full border border-gray-300 shadow-inner focus:outline-none" />
+        <button id="send-btn" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-full">Send</button>
+      </div>
+    </section>
   </main>
 
   <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      onSnapshot,
+      query,
+      orderBy,
+      doc,
+      setDoc,
+      getDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAWMZRlTTEJmMTkjBf4aVhlLeHLMTqUttU",
@@ -40,51 +60,92 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    const chatList = document.getElementById("chat-list");
     const chatBox = document.getElementById("chat-box");
     const msgInput = document.getElementById("msg-input");
     const sendBtn = document.getElementById("send-btn");
+    const chatHeader = document.getElementById("chat-header");
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const otherUser = urlParams.get("user");
+    let currentUser = null;
+    let selectedUser = null;
+    let currentChatId = null;
+    let unsubscribe = null;
 
-    let currentUserEmail = "";
-    let chatId = "";
+    function createChatId(user1, user2) {
+      return [user1, user2].sort().join("_");
+    }
 
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) return (window.location.href = "login.html");
-
-      currentUserEmail = user.email;
-      chatId = [currentUserEmail, otherUser].sort().join("_");
+    function loadChat(chatId, otherUserEmail) {
+      currentChatId = chatId;
+      chatHeader.textContent = `Chat with ${otherUserEmail}`;
+      chatBox.innerHTML = "";
+      if (unsubscribe) unsubscribe(); // Remove previous listener
 
       const messagesRef = collection(db, "messages", chatId, "messages");
       const q = query(messagesRef, orderBy("timestamp", "asc"));
 
-      onSnapshot(q, (snapshot) => {
+      unsubscribe = onSnapshot(q, (snapshot) => {
         chatBox.innerHTML = "";
         snapshot.forEach(doc => {
           const msg = doc.data();
-          const isOwn = msg.sender === currentUserEmail;
-          const msgEl = document.createElement("div");
-          msgEl.className = `px-4 py-2 rounded-lg w-fit max-w-[70%] ${isOwn ? "bg-purple-500 text-white self-end ml-auto" : "bg-gray-200 text-gray-800 self-start"}`;
-          msgEl.textContent = msg.text;
-          chatBox.appendChild(msgEl);
+          const isOwn = msg.sender === currentUser.email;
+          const div = document.createElement("div");
+          div.className = `px-4 py-2 rounded-lg w-fit max-w-[70%] ${isOwn ? "bg-purple-500 text-white self-end ml-auto" : "bg-gray-200 text-gray-800 self-start"}`;
+          div.textContent = msg.text;
+          chatBox.appendChild(div);
           chatBox.scrollTop = chatBox.scrollHeight;
         });
       });
-    });
+    }
+
+    function renderChatList(chatThreads) {
+      chatList.innerHTML = "";
+      chatThreads.forEach(thread => {
+        const li = document.createElement("li");
+        const otherUser = thread.users.find(u => u !== currentUser.email);
+        li.innerHTML = `<button class="text-left w-full px-3 py-2 rounded hover:bg-gray-100 text-gray-700">${otherUser}</button>`;
+        li.querySelector("button").addEventListener("click", () => {
+          selectedUser = otherUser;
+          loadChat(thread.chatId, otherUser);
+        });
+        chatList.appendChild(li);
+      });
+    }
+
+    async function fetchChatThreads() {
+      const messagesCollection = collection(db, "messages");
+      onSnapshot(messagesCollection, snapshot => {
+        const threads = [];
+        snapshot.forEach(docSnap => {
+          const chatId = docSnap.id;
+          const users = chatId.split("_");
+          if (users.includes(currentUser.email)) {
+            threads.push({ chatId, users });
+          }
+        });
+        renderChatList(threads);
+      });
+    }
 
     sendBtn.addEventListener("click", async () => {
       const text = msgInput.value.trim();
-      if (!text || !currentUserEmail || !chatId) return;
+      if (!text || !currentChatId || !currentUser || !selectedUser) return;
 
-      const messagesRef = collection(db, "messages", chatId, "messages");
+      const messagesRef = collection(db, "messages", currentChatId, "messages");
       await addDoc(messagesRef, {
-        sender: currentUserEmail,
+        sender: currentUser.email,
+        receiver: selectedUser,
         text,
         timestamp: serverTimestamp()
       });
 
       msgInput.value = "";
+    });
+
+    onAuthStateChanged(auth, user => {
+      if (!user) return (window.location.href = "login.html");
+      currentUser = user;
+      fetchChatThreads();
     });
   </script>
 </body>

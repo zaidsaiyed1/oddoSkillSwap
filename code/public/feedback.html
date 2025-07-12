@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rating & Feedback</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .star {
+      font-size: 2rem;
+      color: #d1d5db;
+      cursor: pointer;
+    }
+
+    .star.hovered,
+    .star.selected {
+      color: #fbbf24;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-b from-[#f0f3ff] via-white to-[#fef2f8] flex items-center justify-center p-4">
+
+  <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md text-center">
+
+    <!-- Profile Image and Username -->
+    <div class="flex flex-col items-center mb-4">
+      <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md">
+        <img src="5.png" alt="Profile" class="w-full h-full object-cover">
+      </div>
+      <h2 class="text-xl font-semibold mt-2">@User which u wanna rate</h2>
+    </div>
+
+    <h3 class="text-lg font-medium mb-4">Rate & Feedback</h3>
+
+    <!-- Star Rating -->
+    <div id="starRating" class="flex justify-center space-x-2 mb-4">
+      <span class="star" data-value="1">&#9733;</span>
+      <span class="star" data-value="2">&#9733;</span>
+      <span class="star" data-value="3">&#9733;</span>
+      <span class="star" data-value="4">&#9733;</span>
+      <span class="star" data-value="5">&#9733;</span>
+    </div>
+
+    <!-- Feedback Textarea -->
+    <textarea id="feedback"
+      class="w-full border border-gray-300 rounded-lg p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-200"
+      rows="4" placeholder="Write your feedback..."></textarea>
+
+    <!-- Submit Button -->
+    <button onclick="submitFeedback()"
+      class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 rounded-lg hover:opacity-90 transition">
+      Submit Feedback
+    </button>
+
+    <!-- Confirmation Message -->
+    <p id="confirmationMsg" class="text-green-600 text-sm mt-3 hidden">✅ Feedback submitted successfully!</p>
+  </div>
+
+  <script>
+    const stars = document.querySelectorAll(".star");
+    let selectedRating = 0;
+
+    stars.forEach((star, idx) => {
+      star.addEventListener("mouseenter", () => highlightStars(idx));
+      star.addEventListener("mouseleave", () => highlightStars(selectedRating - 1));
+      star.addEventListener("click", () => {
+        selectedRating = idx + 1;
+        highlightStars(idx);
+      });
+    });
+
+    function highlightStars(index) {
+      stars.forEach((star, i) => {
+        star.classList.remove("selected", "hovered");
+        if (i <= index) {
+          star.classList.add("hovered");
+        }
+      });
+    }
+
+    function submitFeedback() {
+      const feedback = document.getElementById("feedback").value.trim();
+      const confirmation = document.getElementById("confirmationMsg");
+
+      if (selectedRating === 0 || feedback === "") {
+        alert("Please give a rating and write feedback.");
+        return;
+      }
+
+      // Show confirmation message
+      confirmation.classList.remove("hidden");
+
+      // Optional: Clear form
+      document.getElementById("feedback").value = "";
+      selectedRating = 0;
+      highlightStars(-1);
+    }
+  </script>
+
+</body>
+
+</html>
