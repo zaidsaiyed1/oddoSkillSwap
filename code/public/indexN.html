@@ -13,7 +13,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAWMZRlTTEJmMTkjBf4aVhlLeHLMTqUttU",
@@ -60,25 +60,55 @@
       }
     });
 
-    // Availability filter
-    document.addEventListener('DOMContentLoaded', () => {
-      const availabilityFilter = document.getElementById('availability-filter');
-      const memberCards = document.querySelectorAll('[data-availability]');
+    // Load user cards from Firestore
+    document.addEventListener("DOMContentLoaded", async () => {
+      const carousel = document.getElementById("carousel");
+      carousel.innerHTML = "";
 
-      if (availabilityFilter) {
-        availabilityFilter.addEventListener('change', () => {
-          const selected = availabilityFilter.value;
+      const querySnapshot = await getDocs(collection(db, "users"));
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const name = data.name || "Unnamed";
+        const email = doc.id;
+        const offers = data.skills || [];
+        const wants = data.wants || [];
+        const quote = data.quote || "Open to learning and helping others!";
+        const availability = data.availability || "weekdays";
+        const rating = data.rating || "5.0";
+        const avatar = data.avatarUrl || "";
+        const initials = name.slice(0, 2).toUpperCase();
 
-          memberCards.forEach(card => {
-            const available = card.getAttribute('data-availability');
-            if (selected === 'any' || selected === available) {
-              card.style.display = '';
-            } else {
-              card.style.display = 'none';
-            }
-          });
-        });
-      }
+        const offersHTML = offers.map(skill => `<span class="bg-pink-100 px-3 py-1 rounded-full text-sm">${skill}</span>`).join('');
+        const wantsHTML = wants.map(skill => `<span class="bg-purple-100 px-3 py-1 rounded-full text-sm">${skill}</span>`).join('');
+
+        const card = document.createElement("div");
+        card.className = "bg-white p-6 rounded-2xl shadow-xl w-96 shrink-0";
+        card.setAttribute("data-availability", availability);
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center space-x-3">
+              ${
+                avatar
+                  ? `<img src="${avatar}" class="w-10 h-10 rounded-full object-cover">`
+                  : `<div class="w-10 h-10 bg-pink-100 text-pink-600 font-bold rounded-full flex items-center justify-center">${initials}</div>`
+              }
+              <div>
+                <p class="font-semibold text-lg">${name}</p>
+                <div class="text-yellow-400 text-sm">⭐ ⭐ ⭐ ⭐ ⭐</div>
+              </div>
+            </div>
+            <span class="text-sm font-semibold text-gray-500">${rating}</span>
+          </div>
+          <p class="text-sm font-medium text-gray-600">OFFERS</p>
+          <div class="flex flex-wrap gap-2 my-1">${offersHTML}</div>
+          <p class="text-sm font-medium text-gray-600 mt-2">WANTS TO LEARN</p>
+          <div class="flex flex-wrap gap-2 my-1">${wantsHTML}</div>
+          <p class="text-sm italic text-gray-600 mt-2">"${quote}"</p>
+          <button class="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 rounded-full font-semibold shadow-md hover:shadow-lg transition" onclick="location.href='request.html?to=${email}'">Send Request</button>
+        `;
+        carousel.appendChild(card);
+      });
     });
   </script>
 </head>
@@ -104,137 +134,37 @@
   <main class="flex flex-col md:flex-row gap-6 px-6 md:px-20 py-10">
     <!-- Filters -->
     <aside class="bg-white p-6 rounded-2xl shadow-xl w-full md:w-1/4">
-  <h2 class="text-lg font-semibold mb-4">Filters</h2>
-
-  <!-- Skills Filter -->
-  <div class="mb-6">
-    <p class="font-medium mb-2">Skills</p>
-    <label class="block mb-1"><input type="checkbox" class="mr-2"> 🎨 Design</label>
-    <label class="block mb-1"><input type="checkbox" class="mr-2"> 💻 Programming</label>
-    <label class="block mb-1"><input type="checkbox" class="mr-2"> 📸 Photography</label>
-    <label class="block mb-1"><input type="checkbox" class="mr-2"> 🎵 Music</label>
-    <label class="block mb-1"><input type="checkbox" class="mr-2"> 🔍 Cooking</label>
-  </div>
-
-  <!-- Availability Filter -->
-  <div class="mb-6">
-    <p class="font-medium mb-2">Availability</p>
-    <label class="block mb-1"><input type="checkbox" class="mr-2" data-filter="availability" value="Weekdays"> Weekdays</label>
-    <label class="block mb-1"><input type="checkbox" class="mr-2" data-filter="availability" value="Weekends"> Weekends</label>
-  </div>
-
-  <!-- Rating (static visuals for now) -->
-  <div>
-    <p class="font-medium mb-2">Minimum Rating</p>
-    <div class="text-yellow-400 text-xl space-x-1">
-      <span>⭐ ⭐ ⭐ ⭐ ⭐</span>
-    </div>
-  </div>
-</aside>
-
-
-    <!-- Skills and Members -->
-    <section class="flex-1 space-y-10">
+      <h2 class="text-lg font-semibold mb-4">Filters</h2>
+      <div class="mb-6">
+        <p class="font-medium mb-2">Skills</p>
+        <label class="block mb-1"><input type="checkbox" class="mr-2"> 🎨 Design</label>
+        <label class="block mb-1"><input type="checkbox" class="mr-2"> 💻 Programming</label>
+        <label class="block mb-1"><input type="checkbox" class="mr-2"> 📸 Photography</label>
+        <label class="block mb-1"><input type="checkbox" class="mr-2"> 🎵 Music</label>
+        <label class="block mb-1"><input type="checkbox" class="mr-2"> 🔍 Cooking</label>
+      </div>
+      <div class="mb-6">
+        <p class="font-medium mb-2">Availability</p>
+        <label class="block mb-1"><input type="checkbox" class="mr-2"> Weekdays</label>
+        <label class="block mb-1"><input type="checkbox" class="mr-2"> Weekends</label>
+      </div>
       <div>
-        <h3 class="text-2xl font-semibold mb-4">Popular Skills</h3>
-        <div class="flex flex-wrap gap-4">
-          <span class="px-4 py-2 bg-white rounded-full shadow-md text-base">🎨 Graphic Design</span>
-          <span class="px-4 py-2 bg-white rounded-full shadow-md text-base">💻 Web Development</span>
-          <span class="px-4 py-2 bg-white rounded-full shadow-md text-base">📸 Photography</span>
-          <span class="px-4 py-2 bg-white rounded-full shadow-md text-base">🎸 Guitar</span>
-          <span class="px-4 py-2 bg-white rounded-full shadow-md text-base">🔍 Cooking</span>
-          <span class="px-4 py-2 bg-white rounded-full shadow-md text-base">🗣 Languages</span>
+        <p class="font-medium mb-2">Minimum Rating</p>
+        <div class="text-yellow-400 text-xl space-x-1">
+          <span>⭐ ⭐ ⭐ ⭐ ⭐</span>
         </div>
       </div>
+    </aside>
 
-      <!-- Featured Members Section -->
-      <div>
-        <h3 class="text-2xl font-semibold mb-6">Featured Members</h3>
-        <div id="carousel" class="flex overflow-x-auto gap-6 scroll-smooth snap-x snap-mandatory pb-4">
-          <!-- Member 1 -->
-          <div class="bg-white p-6 rounded-2xl shadow-xl w-96 shrink-0" data-availability="weekdays">
-            <div class="flex items-center justify-between mb-4">
-              <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-purple-100 text-purple-600 font-bold rounded-full flex items-center justify-center">SA</div>
-                <div>
-                  <p class="font-semibold text-lg">Sarah Anderson</p>
-                  <div class="text-yellow-400 text-sm">⭐ ⭐ ⭐ ⭐ ⭐</div>
-                </div>
-              </div>
-              <span class="text-sm font-semibold text-gray-500">4.9</span>
-            </div>
-            <p class="text-sm font-medium text-gray-600">OFFERS</p>
-            <div class="flex flex-wrap gap-2 my-1">
-              <span class="bg-pink-100 px-3 py-1 rounded-full text-sm">🎨 UI/UX Design</span>
-              <span class="bg-blue-100 px-3 py-1 rounded-full text-sm">📐 Figma</span>
-            </div>
-            <p class="text-sm font-medium text-gray-600 mt-2">WANTS TO LEARN</p>
-            <div class="flex flex-wrap gap-2 my-1">
-              <span class="bg-orange-100 px-3 py-1 rounded-full text-sm">💻 React</span>
-              <span class="bg-purple-100 px-3 py-1 rounded-full text-sm">📸 Photography</span>
-            </div>
-            <p class="text-sm italic text-gray-600 mt-2">"Love helping others bring their creative visions to life through great design!"</p>
-            <button class="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 rounded-full font-semibold shadow-md hover:shadow-lg transition">Send Request</button>
-          </div>
-
-          <!-- Member 2 -->
-          <div class="bg-white p-6 rounded-2xl shadow-xl w-96 shrink-0" data-availability="weekends">
-            <div class="flex items-center justify-between mb-4">
-              <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-blue-100 text-blue-600 font-bold rounded-full flex items-center justify-center">MJ</div>
-                <div>
-                  <p class="font-semibold text-lg">Mike Johnson</p>
-                  <div class="text-yellow-400 text-sm">⭐ ⭐ ⭐ ⭐ ⭐</div>
-                </div>
-              </div>
-              <span class="text-sm font-semibold text-gray-500">4.8</span>
-            </div>
-            <p class="text-sm font-medium text-gray-600">OFFERS</p>
-            <div class="flex flex-wrap gap-2 my-1">
-              <span class="bg-green-100 px-3 py-1 rounded-full text-sm">🐍 Python</span>
-              <span class="bg-blue-100 px-3 py-1 rounded-full text-sm">🤖 Machine Learning</span>
-            </div>
-            <p class="text-sm font-medium text-gray-600 mt-2">WANTS TO LEARN</p>
-            <div class="flex flex-wrap gap-2 my-1">
-              <span class="bg-pink-100 px-3 py-1 rounded-full text-sm">🎸 Guitar</span>
-              <span class="bg-purple-100 px-3 py-1 rounded-full text-sm">🍝 Italian Cooking</span>
-            </div>
-            <p class="text-sm italic text-gray-600 mt-2">"Passionate about teaching programming and making complex concepts simple!"</p>
-            <button class="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 rounded-full font-semibold shadow-md hover:shadow-lg transition">Send Request</button>
-          </div>
-
-          <!-- Member 3 -->
-          <div class="bg-white p-6 rounded-2xl shadow-xl w-96 shrink-0" data-availability="weekdays">
-            <div class="flex items-center justify-between mb-4">
-              <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-pink-100 text-pink-600 font-bold rounded-full flex items-center justify-center">PM</div>
-                <div>
-                  <p class="font-semibold text-lg">Priya Mehta</p>
-                  <div class="text-yellow-400 text-sm">⭐ ⭐ ⭐ ⭐ ⭐</div>
-                </div>
-              </div>
-              <span class="text-sm font-semibold text-gray-500">5.0</span>
-            </div>
-            <p class="text-sm font-medium text-gray-600">OFFERS</p>
-            <div class="flex flex-wrap gap-2 my-1">
-              <span class="bg-yellow-100 px-3 py-1 rounded-full text-sm">🍳 Indian Cooking</span>
-              <span class="bg-green-100 px-3 py-1 rounded-full text-sm">🌱 Mindfulness</span>
-            </div>
-            <p class="text-sm font-medium text-gray-600 mt-2">WANTS TO LEARN</p>
-            <div class="flex flex-wrap gap-2 my-1">
-              <span class="bg-orange-100 px-3 py-1 rounded-full text-sm">🗣 Spanish</span>
-              <span class="bg-purple-100 px-3 py-1 rounded-full text-sm">🎨 Painting</span>
-            </div>
-            <p class="text-sm italic text-gray-600 mt-2">"Excited to share my culture through food and connect with new people!"</p>
-            <button class="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 rounded-full font-semibold shadow-md hover:shadow-lg transition">Send Request</button>
-          </div>
-        </div>
-
-        <!-- Pagination -->
-        <div class="mt-4 flex justify-center gap-4">
-          <button onclick="document.getElementById('carousel').scrollBy({ left: -900, behavior: 'smooth' })" class="bg-purple-500 text-white px-4 py-2 rounded-full">← Prev</button>
-          <button onclick="document.getElementById('carousel').scrollBy({ left: 900, behavior: 'smooth' })" class="bg-purple-500 text-white px-4 py-2 rounded-full">Next →</button>
-        </div>
+    <!-- Member Cards -->
+    <section class="flex-1 space-y-10">
+      <h3 class="text-2xl font-semibold mb-6">Featured Members</h3>
+      <div id="carousel" class="flex overflow-x-auto gap-6 scroll-smooth snap-x snap-mandatory pb-4">
+        <!-- Cards will be injected here from Firestore -->
+      </div>
+      <div class="mt-4 flex justify-center gap-4">
+        <button onclick="document.getElementById('carousel').scrollBy({ left: -900, behavior: 'smooth' })" class="bg-purple-500 text-white px-4 py-2 rounded-full">← Prev</button>
+        <button onclick="document.getElementById('carousel').scrollBy({ left: 900, behavior: 'smooth' })" class="bg-purple-500 text-white px-4 py-2 rounded-full">Next →</button>
       </div>
     </section>
   </main>

@@ -26,7 +26,6 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
-
   onAuthStateChanged(auth, async (user) => {
     const loginBtn = document.getElementById('login-btn');
     const profileIcon = document.getElementById('profile-icon');
@@ -75,7 +74,94 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+document.querySelectorAll('.request-btn').forEach(button => {
+  button.addEventListener('click', async () => {
+    const receiverEmail = button.dataset.receiver; // set this in HTML
+    const method = confirm("Do you want to connect via Google Meet? Click Cancel for In-Person") ? 'Meet' : 'In-Person';
 
+    const auth = getAuth();
+    const db = getFirestore();
+
+    const user = auth.currentUser;
+    if (!user) return alert("Please log in first");
+
+    await addDoc(collection(db, "requests"), {
+      sender: user.email,
+      receiver: receiverEmail,
+      method: method,
+      status: "pending",
+      timestamp: new Date()
+    });
+
+    alert("Request sent successfully!");
+  });
+});
+
+async function loadUsers() {
+  const container = document.getElementById('carousel');
+  if (!container) {
+    console.error("❌ Container with id 'carousel' not found");
+    return;
+  }
+
+  container.innerHTML = "<p class='text-gray-500'>Loading...</p>";
+
+  try {
+    const querySnapshot = await getDocs(collection(db, "users"));
+    container.innerHTML = ""; // Clear loading text
+
+    if (querySnapshot.empty) {
+      container.innerHTML = "<p class='text-center text-gray-500'>No users found.</p>";
+      return;
+    }
+
+    querySnapshot.forEach(doc => {
+      const data = doc.data();
+      console.log("📄 User:", data);
+
+      const name = data.name || "Unnamed User";
+      const initials = name.split(" ").map(n => n[0]).join("").toUpperCase();
+      const rating = data.rating || "5.0";
+      const skillsOffered = Array.isArray(data.skillsOffered)
+        ? data.skillsOffered.map(skill => `<span class="bg-pink-100 px-3 py-1 rounded-full text-sm">${skill}</span>`).join('')
+        : "";
+      const skillsWanted = Array.isArray(data.skillsWanted)
+        ? data.skillsWanted.map(skill => `<span class="bg-blue-100 px-3 py-1 rounded-full text-sm">${skill}</span>`).join('')
+        : "";
+      const bio = data.bio || "Excited to connect and learn!";
+      const email = data.email || "unknown@example.com";
+
+      const card = `
+        <div class="bg-white p-6 rounded-2xl shadow-xl w-96 shrink-0">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-purple-100 text-purple-600 font-bold rounded-full flex items-center justify-center">${initials}</div>
+              <div>
+                <p class="font-semibold text-lg">${name}</p>
+                <div class="text-yellow-400 text-sm">⭐ ⭐ ⭐ ⭐ ⭐</div>
+              </div>
+            </div>
+            <span class="text-sm font-semibold text-gray-500">${rating}</span>
+          </div>
+          <p class="text-sm font-medium text-gray-600">OFFERS</p>
+          <div class="flex flex-wrap gap-2 my-1">${skillsOffered}</div>
+          <p class="text-sm font-medium text-gray-600 mt-2">WANTS TO LEARN</p>
+          <div class="flex flex-wrap gap-2 my-1">${skillsWanted}</div>
+          <p class="text-sm italic text-gray-600 mt-2">"${bio}"</p>
+          <button class="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 rounded-full font-semibold shadow-md hover:shadow-lg transition" onclick="location.href='request.html?to=${email}'">Send Request</button>
+        </div>
+      `;
+
+      container.insertAdjacentHTML('beforeend', card);
+    });
+
+  } catch (error) {
+    console.error("🔥 Error loading users:", error);
+    container.innerHTML = "<p class='text-center text-red-500'>Failed to load users.</p>";
+  }
+}
+
+loadUsers();
 </script>
 
 
@@ -153,92 +239,9 @@ document.addEventListener('DOMContentLoaded', () => {
       <!-- Featured Members Section -->
 <div>
   <h3 class="text-2xl font-semibold mb-6">Featured Members</h3>
-
-  <!-- Scrollable container -->
   <div id="carousel" class="flex overflow-x-auto gap-6 scroll-smooth snap-x snap-mandatory pb-4">
-    <!-- Page 1 -->
-    <div class="flex flex-none gap-6 w-full snap-start" style="scroll-snap-align: start;">
-      <!-- Sarah Anderson -->
-      <div class="bg-white p-6 rounded-2xl shadow-xl w-96 shrink-0">
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 bg-purple-100 text-purple-600 font-bold rounded-full flex items-center justify-center">SA</div>
-            <div>
-              <p class="font-semibold text-lg">Sarah Anderson</p>
-              <div class="text-yellow-400 text-sm">⭐ ⭐ ⭐ ⭐ ⭐</div>
-            </div>
-          </div>
-          <span class="text-sm font-semibold text-gray-500">4.9</span>
-        </div>
-        <p class="text-sm font-medium text-gray-600">OFFERS</p>
-        <div class="flex flex-wrap gap-2 my-1">
-          <span class="bg-pink-100 px-3 py-1 rounded-full text-sm">🎨 UI/UX Design</span>
-          <span class="bg-blue-100 px-3 py-1 rounded-full text-sm">📐 Figma</span>
-        </div>
-        <p class="text-sm font-medium text-gray-600 mt-2">WANTS TO LEARN</p>
-        <div class="flex flex-wrap gap-2 my-1">
-          <span class="bg-orange-100 px-3 py-1 rounded-full text-sm">💻 React</span>
-          <span class="bg-purple-100 px-3 py-1 rounded-full text-sm">📸 Photography</span>
-        </div>
-        <p class="text-sm italic text-gray-600 mt-2">"Love helping others bring their creative visions to life through great design!"</p>
-        <button class="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 rounded-full font-semibold shadow-md hover:shadow-lg transition">Send Request</button>
-      </div>
-
-      <!-- Mike Johnson -->
-      <div class="bg-white p-6 rounded-2xl shadow-xl w-96 shrink-0">
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 bg-blue-100 text-blue-600 font-bold rounded-full flex items-center justify-center">MJ</div>
-            <div>
-              <p class="font-semibold text-lg">Mike Johnson</p>
-              <div class="text-yellow-400 text-sm">⭐ ⭐ ⭐ ⭐ ⭐</div>
-            </div>
-          </div>
-          <span class="text-sm font-semibold text-gray-500">4.8</span>
-        </div>
-        <p class="text-sm font-medium text-gray-600">OFFERS</p>
-        <div class="flex flex-wrap gap-2 my-1">
-          <span class="bg-green-100 px-3 py-1 rounded-full text-sm">🐍 Python</span>
-          <span class="bg-blue-100 px-3 py-1 rounded-full text-sm">🤖 Machine Learning</span>
-        </div>
-        <p class="text-sm font-medium text-gray-600 mt-2">WANTS TO LEARN</p>
-        <div class="flex flex-wrap gap-2 my-1">
-          <span class="bg-pink-100 px-3 py-1 rounded-full text-sm">🎸 Guitar</span>
-          <span class="bg-purple-100 px-3 py-1 rounded-full text-sm">🍝 Italian Cooking</span>
-        </div>
-        <p class="text-sm italic text-gray-600 mt-2">"Passionate about teaching programming and making complex concepts simple!"</p>
-        <button class="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 rounded-full font-semibold shadow-md hover:shadow-lg transition">Send Request</button>
-      </div>
-
-      <!-- Priya Mehta -->
-      <div class="bg-white p-6 rounded-2xl shadow-xl w-96 shrink-0">
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 bg-pink-100 text-pink-600 font-bold rounded-full flex items-center justify-center">PM</div>
-            <div>
-              <p class="font-semibold text-lg">Priya Mehta</p>
-              <div class="text-yellow-400 text-sm">⭐ ⭐ ⭐ ⭐ ⭐</div>
-            </div>
-          </div>
-          <span class="text-sm font-semibold text-gray-500">5.0</span>
-        </div>
-        <p class="text-sm font-medium text-gray-600">OFFERS</p>
-        <div class="flex flex-wrap gap-2 my-1">
-          <span class="bg-yellow-100 px-3 py-1 rounded-full text-sm">🍳 Indian Cooking</span>
-          <span class="bg-green-100 px-3 py-1 rounded-full text-sm">🌱 Mindfulness</span>
-        </div>
-        <p class="text-sm font-medium text-gray-600 mt-2">WANTS TO LEARN</p>
-        <div class="flex flex-wrap gap-2 my-1">
-          <span class="bg-orange-100 px-3 py-1 rounded-full text-sm">🗣 Spanish</span>
-          <span class="bg-purple-100 px-3 py-1 rounded-full text-sm">🎨 Painting</span>
-        </div>
-        <p class="text-sm italic text-gray-600 mt-2">"Excited to share my culture through food and connect with new people!"</p>
-        <button class="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 rounded-full font-semibold shadow-md hover:shadow-lg transition">Send Request</button>
-      </div>
+     
     </div>
-
-    <!-- Future pages can be added here as more members are introduced -->
-  </div>
 
   <!-- Pagination Controls -->
   <div class="mt-4 flex justify-center gap-4">

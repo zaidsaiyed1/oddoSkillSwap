@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Send Skill Request</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-b from-purple-50 to-pink-50 min-h-screen flex items-center justify-center px-4">
+  <div class="bg-white p-8 rounded-xl shadow-lg text-center max-w-sm w-full">
+    <h1 class="text-2xl font-bold mb-4 text-gray-800">Choose Meeting Method</h1>
+    <p class="mb-6 text-gray-600">How would you like to connect?</p>
+    
+    <div class="space-y-4 mb-6">
+      <button id="meetBtn" class="w-full bg-purple-600 text-white py-2 rounded-full font-semibold hover:bg-purple-700 transition">Google Meet</button>
+      <button id="inPersonBtn" class="w-full bg-pink-500 text-white py-2 rounded-full font-semibold hover:bg-pink-600 transition">In-Person</button>
+    </div>
+
+    <p id="statusMsg" class="text-sm text-green-600 font-medium hidden mb-4">Request Sent!</p>
+
+    <!-- 🔙 Back Button -->
+    <button onclick="location.href='index.html'" class="mt-4 w-full bg-gray-200 text-gray-800 py-2 rounded-full font-semibold hover:bg-gray-300 transition">← Back to Home</button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAWMZRlTTEJmMTkjBf4aVhlLeHLMTqUttU",
+      authDomain: "skillswap-9bfec.firebaseapp.com",
+      projectId: "skillswap-9bfec",
+      storageBucket: "skillswap-9bfec.appspot.com",
+      messagingSenderId: "320928436557",
+      appId: "1:320928436557:web:08c083525890a72e222704"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        alert("Please login first.");
+        window.location.href = "login.html";
+      } else {
+        currentUser = user;
+      }
+    });
+
+    // Optionally read ?to=email@example.com from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const receiverEmail = urlParams.get('to') || "sarah@email.com"; // fallback if not passed
+
+    async function sendRequest(method) {
+      if (!currentUser) return;
+
+      await addDoc(collection(db, "requests"), {
+        sender: currentUser.email,
+        receiver: receiverEmail,
+        method: method,
+        status: "pending",
+        timestamp: new Date()
+      });
+
+      document.getElementById("statusMsg").classList.remove("hidden");
+    }
+
+    document.getElementById("meetBtn").addEventListener("click", () => sendRequest("Google Meet"));
+    document.getElementById("inPersonBtn").addEventListener("click", () => sendRequest("In-Person"));
+  </script>
+</body>
+</html>
