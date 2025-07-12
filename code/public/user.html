@@ -14,9 +14,11 @@
   <header class="bg-white shadow-md px-8 py-4 flex justify-between items-center sticky top-0 z-50">
     <h1 class="text-2xl font-bold text-pink-600">SkillSwap</h1>
     <nav class="hidden md:flex space-x-6 text-gray-700 font-medium">
-      <a href="index.html" class="hover:text-pink-500">Home</a>
+
       <a href="dashboard.html" class="hover:text-pink-500">Dashboard</a>
-   
+      <button id="logout-btn" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-md transition">
+      Logout
+    </button>
     </nav>
   </header>
 
@@ -44,7 +46,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-
+    import { onSnapshot } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
     const firebaseConfig = {
       apiKey: "AIzaSyAWMZRlTTEJmMTkjBf4aVhlLeHLMTqUttU",
       authDomain: "skillswap-9bfec.firebaseapp.com",
@@ -80,17 +82,39 @@
         avatarEl.textContent = (user.displayName || defaultName).charAt(0).toUpperCase();
 
         const docRef = doc(db, "users", email);
-        const docSnap = await getDoc(docRef);
+        
 
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          (data.skills || []).forEach(skill => addTag(skill, skillList));
-          (data.goals || []).forEach(goal => addTag(goal, goalList));
-        }
+onSnapshot(docRef, (docSnap) => {
+  if (docSnap.exists()) {
+    const data = docSnap.data();
+
+    // Clear old data
+    skillList.innerHTML = "";
+    goalList.innerHTML = "";
+
+    // Update UI
+    nameEl.textContent = data.name || defaultName;
+    avatarEl.textContent = (data.name || defaultName).charAt(0).toUpperCase();
+
+    (data.skills || []).forEach(skill => addTag(skill, skillList));
+    (data.goals || []).forEach(goal => addTag(goal, goalList));
+  }
+});
+
       } else {
         window.location.href = "login.html";
       }
     });
+    import { signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+
+document.getElementById("logout-btn").addEventListener("click", () => {
+  signOut(auth).then(() => {
+    window.location.href = "index.html";
+  }).catch((error) => {
+    console.error("Logout error:", error);
+  });
+});
+
   </script>
 </body>
 </html>

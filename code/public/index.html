@@ -9,57 +9,74 @@
   <style>
     body { font-family: 'Outfit', sans-serif; }
   </style>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAWMZRlTTEJmMTkjBf4aVhlLeHLMTqUttU",
-      authDomain: "skillswap-9bfec.firebaseapp.com",
-      projectId: "skillswap-9bfec",
-      storageBucket: "skillswap-9bfec.appspot.com",
-      messagingSenderId: "320928436557",
-      appId: "1:320928436557:web:08c083525890a72e222704"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyAWMZRlTTEJmMTkjBf4aVhlLeHLMTqUttU",
+    authDomain: "skillswap-9bfec.firebaseapp.com",
+    projectId: "skillswap-9bfec",
+    storageBucket: "skillswap-9bfec.appspot.com",
+    messagingSenderId: "320928436557",
+    appId: "1:320928436557:web:08c083525890a72e222704"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-    onAuthStateChanged(auth, async (user) => {
-      const loginBtn = document.getElementById('login-btn');
-      const profileIcon = document.getElementById('profile-icon');
-      const profileInitial = document.getElementById('profile-initial');
-      const avatarImg = document.getElementById('profile-avatar-img');
+  onAuthStateChanged(auth, async (user) => {
+    const loginBtn = document.getElementById('login-btn');
+    const profileIcon = document.getElementById('profile-icon');
+    const profileInitial = document.getElementById('profile-initial');
+    const avatarImg = document.getElementById('profile-avatar-img');
 
-      if (user) {
-        loginBtn?.classList.add('hidden');
-        profileIcon?.classList.remove('hidden');
-
-        const email = user.email;
-        const displayName = user.displayName || email.split("@")[0];
-        const initial = displayName.charAt(0).toUpperCase();
-
-        const docRef = doc(db, "users", email);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists() && docSnap.data().avatarUrl) {
-          const avatarUrl = docSnap.data().avatarUrl;
-          avatarImg.src = avatarUrl;
-          avatarImg.classList.remove('hidden');
-          profileInitial.classList.add('hidden');
-        } else {
-          profileInitial.textContent = initial;
-          avatarImg.classList.add('hidden');
-          profileInitial.classList.remove('hidden');
-        }
-      } else {
-        loginBtn?.classList.remove('hidden');
-        profileIcon?.classList.add('hidden');
+    if (user) {
+      // Redirect to indexN.html if already logged in
+      if (!window.location.href.includes("indexN.html")) {
+        window.location.href = "indexN.html";
+        return;
       }
+
+      loginBtn?.classList.add('hidden');
+      profileIcon?.classList.remove('hidden');
+
+      const email = user.email;
+      const displayName = user.displayName || email.split("@")[0];
+      const initial = displayName.charAt(0).toUpperCase();
+
+      const docRef = doc(db, "users", email);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists() && docSnap.data().avatarUrl) {
+        const avatarUrl = docSnap.data().avatarUrl;
+        avatarImg.src = avatarUrl;
+        avatarImg.classList.remove('hidden');
+        profileInitial.classList.add('hidden');
+      } else {
+        profileInitial.textContent = initial;
+        avatarImg.classList.add('hidden');
+        profileInitial.classList.remove('hidden');
+      }
+    } else {
+      loginBtn?.classList.remove('hidden');
+      profileIcon?.classList.add('hidden');
+    }
+  });
+
+  // Handle "Get Started" button click → send to signup
+document.addEventListener('DOMContentLoaded', () => {
+  const getStartedBtn = document.getElementById('get-started-btn');
+  if (getStartedBtn) {
+    getStartedBtn.addEventListener('click', () => {
+      window.location.href = 'signup.html';
     });
-  </script>
+  }
+});
+
+</script>
 
 
 </head>
@@ -71,7 +88,6 @@
     <nav class="hidden md:flex space-x-6 text-gray-700 font-medium">
       <a href="#" class="hover:text-pink-500">Home</a>
       <a href="#" class="hover:text-pink-500">Dashboard</a>
-      <a href="Skills.html" class="hover:text-pink-500">Skills</a>
       <a href="#" class="hover:text-pink-500">Profile</a>
     </nav>
     <div class="flex items-center space-x-2">
@@ -85,7 +101,10 @@
   <section class="text-center py-20 px-6 bg-gradient-to-b from-[#f0f3ff] to-white">
     <h2 class="text-4xl md:text-5xl font-bold text-gray-900">Learn Something. <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">Teach Something.</span></h2>
     <p class="text-lg text-gray-600 mt-4 max-w-xl mx-auto">Connect with people in your community to exchange skills, knowledge, and experiences. Everyone has something to teach and something to learn.</p>
-    <button class="mt-6 px-6 py-3 rounded-full text-white font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-105 transition shadow-lg">Get Started</button>
+    <button id="get-started-btn" class="mt-6 px-6 py-3 rounded-full text-white font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-105 transition shadow-lg">
+    Get Started
+    </button>
+
   </section>
 
   <!-- Main Content -->
@@ -131,88 +150,103 @@
         </div>
       </div>
 
-      <div>
-        <h3 class="text-2xl font-semibold mb-6">Featured Members</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-  <!-- Sarah Anderson -->
-  <div class="bg-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transition">
-    <div class="flex items-center justify-between mb-4">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 bg-purple-100 text-purple-600 font-bold rounded-full flex items-center justify-center">SA</div>
-        <div>
-          <p class="font-semibold text-lg">Sarah Anderson</p>
-          <div class="text-yellow-400 text-sm">⭐ ⭐ ⭐ ⭐ ⭐</div>
+      <!-- Featured Members Section -->
+<div>
+  <h3 class="text-2xl font-semibold mb-6">Featured Members</h3>
+
+  <!-- Scrollable container -->
+  <div id="carousel" class="flex overflow-x-auto gap-6 scroll-smooth snap-x snap-mandatory pb-4">
+    <!-- Page 1 -->
+    <div class="flex flex-none gap-6 w-full snap-start" style="scroll-snap-align: start;">
+      <!-- Sarah Anderson -->
+      <div class="bg-white p-6 rounded-2xl shadow-xl w-96 shrink-0">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-purple-100 text-purple-600 font-bold rounded-full flex items-center justify-center">SA</div>
+            <div>
+              <p class="font-semibold text-lg">Sarah Anderson</p>
+              <div class="text-yellow-400 text-sm">⭐ ⭐ ⭐ ⭐ ⭐</div>
+            </div>
+          </div>
+          <span class="text-sm font-semibold text-gray-500">4.9</span>
         </div>
+        <p class="text-sm font-medium text-gray-600">OFFERS</p>
+        <div class="flex flex-wrap gap-2 my-1">
+          <span class="bg-pink-100 px-3 py-1 rounded-full text-sm">🎨 UI/UX Design</span>
+          <span class="bg-blue-100 px-3 py-1 rounded-full text-sm">📐 Figma</span>
+        </div>
+        <p class="text-sm font-medium text-gray-600 mt-2">WANTS TO LEARN</p>
+        <div class="flex flex-wrap gap-2 my-1">
+          <span class="bg-orange-100 px-3 py-1 rounded-full text-sm">💻 React</span>
+          <span class="bg-purple-100 px-3 py-1 rounded-full text-sm">📸 Photography</span>
+        </div>
+        <p class="text-sm italic text-gray-600 mt-2">"Love helping others bring their creative visions to life through great design!"</p>
+        <button class="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 rounded-full font-semibold shadow-md hover:shadow-lg transition">Send Request</button>
       </div>
-      <span class="text-sm font-semibold text-gray-500">4.9</span>
+
+      <!-- Mike Johnson -->
+      <div class="bg-white p-6 rounded-2xl shadow-xl w-96 shrink-0">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-blue-100 text-blue-600 font-bold rounded-full flex items-center justify-center">MJ</div>
+            <div>
+              <p class="font-semibold text-lg">Mike Johnson</p>
+              <div class="text-yellow-400 text-sm">⭐ ⭐ ⭐ ⭐ ⭐</div>
+            </div>
+          </div>
+          <span class="text-sm font-semibold text-gray-500">4.8</span>
+        </div>
+        <p class="text-sm font-medium text-gray-600">OFFERS</p>
+        <div class="flex flex-wrap gap-2 my-1">
+          <span class="bg-green-100 px-3 py-1 rounded-full text-sm">🐍 Python</span>
+          <span class="bg-blue-100 px-3 py-1 rounded-full text-sm">🤖 Machine Learning</span>
+        </div>
+        <p class="text-sm font-medium text-gray-600 mt-2">WANTS TO LEARN</p>
+        <div class="flex flex-wrap gap-2 my-1">
+          <span class="bg-pink-100 px-3 py-1 rounded-full text-sm">🎸 Guitar</span>
+          <span class="bg-purple-100 px-3 py-1 rounded-full text-sm">🍝 Italian Cooking</span>
+        </div>
+        <p class="text-sm italic text-gray-600 mt-2">"Passionate about teaching programming and making complex concepts simple!"</p>
+        <button class="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 rounded-full font-semibold shadow-md hover:shadow-lg transition">Send Request</button>
+      </div>
+
+      <!-- Priya Mehta -->
+      <div class="bg-white p-6 rounded-2xl shadow-xl w-96 shrink-0">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-pink-100 text-pink-600 font-bold rounded-full flex items-center justify-center">PM</div>
+            <div>
+              <p class="font-semibold text-lg">Priya Mehta</p>
+              <div class="text-yellow-400 text-sm">⭐ ⭐ ⭐ ⭐ ⭐</div>
+            </div>
+          </div>
+          <span class="text-sm font-semibold text-gray-500">5.0</span>
+        </div>
+        <p class="text-sm font-medium text-gray-600">OFFERS</p>
+        <div class="flex flex-wrap gap-2 my-1">
+          <span class="bg-yellow-100 px-3 py-1 rounded-full text-sm">🍳 Indian Cooking</span>
+          <span class="bg-green-100 px-3 py-1 rounded-full text-sm">🌱 Mindfulness</span>
+        </div>
+        <p class="text-sm font-medium text-gray-600 mt-2">WANTS TO LEARN</p>
+        <div class="flex flex-wrap gap-2 my-1">
+          <span class="bg-orange-100 px-3 py-1 rounded-full text-sm">🗣 Spanish</span>
+          <span class="bg-purple-100 px-3 py-1 rounded-full text-sm">🎨 Painting</span>
+        </div>
+        <p class="text-sm italic text-gray-600 mt-2">"Excited to share my culture through food and connect with new people!"</p>
+        <button class="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 rounded-full font-semibold shadow-md hover:shadow-lg transition">Send Request</button>
+      </div>
     </div>
-    <p class="font-medium text-sm text-gray-600">OFFERS</p>
-    <div class="flex flex-wrap gap-2 my-1">
-      <span class="bg-pink-100 px-3 py-1 rounded-full text-sm">🎨 UI/UX Design</span>
-      <span class="bg-blue-100 px-3 py-1 rounded-full text-sm">📐 Figma</span>
-    </div>
-    <p class="font-medium text-sm text-gray-600 mt-2">WANTS TO LEARN</p>
-    <div class="flex flex-wrap gap-2 my-1">
-      <span class="bg-orange-100 px-3 py-1 rounded-full text-sm">💻 React</span>
-      <span class="bg-purple-100 px-3 py-1 rounded-full text-sm">📸 Photography</span>
-    </div>
-    <p class="text-sm italic text-gray-600 mt-2">"Love helping others bring their creative visions to life through great design!"</p>
-    <button class="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 rounded-full font-semibold shadow-md hover:shadow-lg transition">Send Request</button>
+
+    <!-- Future pages can be added here as more members are introduced -->
   </div>
 
-  <!-- Mike Johnson -->
-  <div class="bg-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transition">
-    <div class="flex items-center justify-between mb-4">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 bg-blue-100 text-blue-600 font-bold rounded-full flex items-center justify-center">MJ</div>
-        <div>
-          <p class="font-semibold text-lg">Mike Johnson</p>
-          <div class="text-yellow-400 text-sm">⭐ ⭐ ⭐ ⭐ ⭐</div>
-        </div>
-      </div>
-      <span class="text-sm font-semibold text-gray-500">4.8</span>
-    </div>
-    <p class="font-medium text-sm text-gray-600">OFFERS</p>
-    <div class="flex flex-wrap gap-2 my-1">
-      <span class="bg-green-100 px-3 py-1 rounded-full text-sm">🐍 Python</span>
-      <span class="bg-blue-100 px-3 py-1 rounded-full text-sm">🤖 Machine Learning</span>
-    </div>
-    <p class="font-medium text-sm text-gray-600 mt-2">WANTS TO LEARN</p>
-    <div class="flex flex-wrap gap-2 my-1">
-      <span class="bg-pink-100 px-3 py-1 rounded-full text-sm">🎸 Guitar</span>
-      <span class="bg-purple-100 px-3 py-1 rounded-full text-sm">🍝 Italian Cooking</span>
-    </div>
-    <p class="text-sm italic text-gray-600 mt-2">"Passionate about teaching programming and making complex concepts simple!"</p>
-    <button class="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 rounded-full font-semibold shadow-md hover:shadow-lg transition">Send Request</button>
-  </div>
-
-  <!-- Priya Mehta -->
-  <div class="bg-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transition">
-    <div class="flex items-center justify-between mb-4">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 bg-pink-100 text-pink-600 font-bold rounded-full flex items-center justify-center">PM</div>
-        <div>
-          <p class="font-semibold text-lg">Priya Mehta</p>
-          <div class="text-yellow-400 text-sm">⭐ ⭐ ⭐ ⭐ ⭐</div>
-        </div>
-      </div>
-      <span class="text-sm font-semibold text-gray-500">5.0</span>
-    </div>
-    <p class="font-medium text-sm text-gray-600">OFFERS</p>
-    <div class="flex flex-wrap gap-2 my-1">
-      <span class="bg-yellow-100 px-3 py-1 rounded-full text-sm">🍳 Indian Cooking</span>
-      <span class="bg-green-100 px-3 py-1 rounded-full text-sm">🌱 Mindfulness</span>
-    </div>
-    <p class="font-medium text-sm text-gray-600 mt-2">WANTS TO LEARN</p>
-    <div class="flex flex-wrap gap-2 my-1">
-      <span class="bg-orange-100 px-3 py-1 rounded-full text-sm">🗣 Spanish</span>
-      <span class="bg-purple-100 px-3 py-1 rounded-full text-sm">🎨 Painting</span>
-    </div>
-    <p class="text-sm italic text-gray-600 mt-2">"Excited to share my culture through food and connect with new people!"</p>
-    <button class="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 rounded-full font-semibold shadow-md hover:shadow-lg transition">Send Request</button>
+  <!-- Pagination Controls -->
+  <div class="mt-4 flex justify-center gap-4">
+    <button onclick="document.getElementById('carousel').scrollBy({ left: -900, behavior: 'smooth' })" class="bg-purple-500 text-white px-4 py-2 rounded-full">← Prev</button>
+    <button onclick="document.getElementById('carousel').scrollBy({ left: 900, behavior: 'smooth' })" class="bg-purple-500 text-white px-4 py-2 rounded-full">Next →</button>
   </div>
 </div>
-      </div>
+
     </section>
   </main>
 
