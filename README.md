@@ -12,7 +12,7 @@ Phone:+91 83204 42031
 
 *Memeber 2:*
 
-Nsme: Krish Sangani
+Name: Krish Sangani
 
 Phone:+91 87994 34837
 
