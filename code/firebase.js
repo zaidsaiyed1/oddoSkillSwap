@@ -3,7 +3,7 @@ const serviceAccount = require('./skillswap-9bfec-firebase.json'); // Path to do
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://<your-database-name>.firebaseio.com" // for Realtime DB
+  databaseURL: "https://console.firebase.google.com/u/0/project/skillswap-9bfec/database/skillswap-9bfec-default-rtdb/data/~2F" // for Realtime DB
 });
 
 const db = admin.database(); // Realtime DB

@@ -249,7 +249,7 @@
                 <div class="tags" id="wantsList"></div>
                 <div class="skills-input">
                     <input type="text" id="wantInput" placeholder="Add a skill...">
-                    <button type="button" class="btn btn-gradient" id="addWantBtn">Add</button>
+                    <button type="button" class="btn btn-gradient" onclick="addskills()" id="addWantBtn">Add</button>
                 </div>
             </div>
 
@@ -319,6 +319,29 @@
                 if (e.key === 'Enter') { e.preventDefault(); document.getElementById(id === 'offerInput' ? 'addOfferBtn' : 'addWantBtn').click(); }
             });
         });
+
+        function addskills() {
+            
+  document.getElementById('profileForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const offers = Array.from(document.getElementById('offersList').children)
+      .map(tag => tag.firstChild.textContent.trim());
+
+    const wants = Array.from(document.getElementById('wantsList').children)
+      .map(tag => tag.firstChild.textContent.trim());
+
+    const skills = {
+      offers: offers,
+      wants: wants
+    };
+
+    // Save to Firebase under `skills/`
+    firebase.database().ref('skills').push(skills)
+      .then(() => alert("Skills saved to Firebase!"))
+      .catch((error) => alert("Error: " + error.message));
+  });
+        }
     </script>
 </body>
 
